@@ -73,7 +73,11 @@ const getLineData = (matches) => {
   PLAYERS.forEach((p) => (run[p] = 0));
   return matches.map((m, i) => {
     const pt = { label: `M${i + 1}` };
-    PLAYERS.forEach((p) => { run[p] += getPts(m.ranks[p]); pt[p] = run[p]; });
+    PLAYERS.forEach((p) => {
+      const rank = m.ranks ? m.ranks[p] : undefined;
+      run[p] += getPts(rank);
+      pt[p] = run[p];
+    });
     return pt;
   });
 };
@@ -397,8 +401,8 @@ function History({ matches, onDelete }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}>
             {PLAYERS.map((p, i) => {
-              const pts = getPts(m.ranks[p]);
-              const isNA = m.ranks[p] === "NA";
+              const pts = getPts(m.ranks ? m.ranks[p] : undefined);
+	      const isNA = m.ranks ? m.ranks[p] === "NA" : false;
               return (
                 <div key={p} style={{ padding: "10px 14px", borderRight: i % 3 !== 2 ? "1px solid #ffffff06" : "none", borderBottom: "1px solid #ffffff06" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
@@ -425,7 +429,7 @@ function History({ matches, onDelete }) {
 function Banner({ matches }) {
   if (!matches.length) return null;
   const last = matches[matches.length - 1];
-  const activePlayers = PLAYERS.filter((p) => last.ranks[p] !== "NA" && last.ranks[p] !== "");
+  const activePlayers = PLAYERS.filter((p) => last.ranks && last.ranks[p] !== "NA" && last.ranks[p] !== "");
   if (!activePlayers.length) return null;
   const winner = activePlayers.reduce((b, p) => Number(last.ranks[p]) < Number(last.ranks[b]) ? p : b, activePlayers[0]);
   const idx = PLAYERS.indexOf(winner);
